@@ -1,0 +1,96 @@
+#messages {
+  list-style: none;
+  padding: 0 0 5rem 0; /* bottom padding of 5rem */
+  max-height: 80vh;     /* or any max height that works with your layout */
+  overflow-y: auto;
+  margin-bottom: 0;
+  scroll-behavior: smooth;
+}
+
+#messages li {
+  margin-bottom: 1rem;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 0.75em 0;
+}
+/* Make sure the base elements take full height */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure Angular component container fills screen */
+app-root {
+  display: block;
+  height: 100%;
+}
+
+/* Full screen flex wrapper for login */
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+/* Centered login card */
+.login-card {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+/* Input fields */
+.input {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.4rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/* Form label/input group */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+/* Submit button */
+.btn {
+  width: 100%;
+  padding: 0.6rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+/* Error message */
+.error-msg {
+  color: #d9534f;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+body, app-root, .login-wrapper {
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
