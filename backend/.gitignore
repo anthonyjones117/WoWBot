@@ -18,3 +18,5 @@ memory.json
 # Ignore IDE/editor config files (optional)
 .vscode/
 .idea/
+
+tmp/

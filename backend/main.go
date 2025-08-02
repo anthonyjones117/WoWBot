@@ -96,9 +96,25 @@ func askGPT(prompt, username string) (string, error) {
 		name, _ := char["name"].(string)
 		race, _ := char["race"].(string)
 		class, _ := char["class"].(string)
+		realm, _ := char["realm"].(string)
+		talents, ok := char["talents"].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		spec, _ := talents["spec"].(string)
+		raw_talents, _ := talents["class_talents"].([]interface{})
+		var class_talents []string
+		for _, v := range raw_talents {
+			if str, ok := v.(string); ok {
+				class_talents = append(class_talents, str)
+			}
+		}
+
+		joined_talents := strings.Join(class_talents, ", ")
 
 		if name != "" && race != "" && class != "" {
-			userSummary += fmt.Sprintf("User %s plays a %s %s named %s.\n", userKey, race, class, name)
+			userSummary += fmt.Sprintf("User %s plays a %s %s named %s on the realm %s \n", userKey, race, class, name, realm)
+			userSummary += fmt.Sprintf("My spec is %s and my talents are %s \n", spec, joined_talents)
 		}
 	}
 
@@ -119,6 +135,7 @@ func askGPT(prompt, username string) (string, error) {
 		3. Arena map name
 
 		Your job is to return a concise PvP strategy (can be read in under 15 seconds) that helps the user team win.
+		Consider also the talents you're aware we possess
 
 		Always respond in the following format, but don't include the Map section if no map was provided:
 
@@ -390,8 +407,9 @@ func fetchCharacterProfile(w http.ResponseWriter, r *http.Request) {
 func fetchCharacterTalents(realm, character, token string) (map[string]interface{}, error) {
 	url := fmt.Sprintf(
 		"https://us.api.blizzard.com/profile/wow/character/%s/%s/specializations?namespace=profile-us&locale=en_US",
-		realm, character,
+		strings.ToLower(realm), strings.ToLower(character),
 	)
+	log.Println("Fetching talents from:", url)
 
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -402,11 +420,84 @@ func fetchCharacterTalents(realm, character, token string) (map[string]interface
 	}
 	defer resp.Body.Close()
 
-	var talentData map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&talentData); err != nil {
-		return nil, err
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read talent response body: %w", err)
 	}
-	return talentData, nil
+
+	// log.Println("Talent API response body (truncated):", string(body[:min(2000, len(body))]))
+
+	// Use a map to extract values manually
+	var raw map[string]interface{}
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, fmt.Errorf("failed to parse talent JSON: %w", err)
+	}
+
+	specs, ok := raw["specializations"].([]interface{})
+	if !ok || len(specs) == 0 {
+		return map[string]interface{}{"error": "No specializations found"}, nil
+	}
+
+	firstSpec, ok := specs[0].(map[string]interface{})
+	if !ok {
+		return map[string]interface{}{"error": "Malformed specialization data"}, nil
+	}
+
+	// --- Spec name ---
+	specName := ""
+	if specInfo, ok := firstSpec["specialization"].(map[string]interface{}); ok {
+		if name, ok := specInfo["name"].(string); ok {
+			specName = name
+		}
+	}
+
+	// --- PvP Talents ---
+	var pvpTalents []string
+	if pvpSlots, ok := firstSpec["pvp_talent_slots"].([]interface{}); ok {
+		for _, slot := range pvpSlots {
+			slotMap, _ := slot.(map[string]interface{})
+			if selected, ok := slotMap["selected"].(map[string]interface{}); ok {
+				if talent, ok := selected["talent"].(map[string]interface{}); ok {
+					if name, ok := talent["name"].(string); ok {
+						pvpTalents = append(pvpTalents, name)
+					}
+				}
+			}
+		}
+	}
+
+	// --- Class Talents ---
+	var classTalents []string
+	if loadouts, ok := firstSpec["loadouts"].([]interface{}); ok && len(loadouts) > 0 {
+		if firstLoadout, ok := loadouts[0].(map[string]interface{}); ok {
+			if talents, ok := firstLoadout["selected_class_talents"].([]interface{}); ok {
+				for _, t := range talents {
+					talentMap, _ := t.(map[string]interface{})
+					if tooltip, ok := talentMap["tooltip"].(map[string]interface{}); ok {
+						if talent, ok := tooltip["talent"].(map[string]interface{}); ok {
+							if name, ok := talent["name"].(string); ok {
+								classTalents = append(classTalents, name)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return map[string]interface{}{
+		"spec":          specName,
+		"pvp_talents":   pvpTalents,
+		"class_talents": classTalents,
+	}, nil
+}
+
+// helper function to truncate long body logs
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func saveCharacter(w http.ResponseWriter, r *http.Request) {
