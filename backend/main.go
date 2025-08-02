@@ -102,16 +102,42 @@ func askGPT(prompt, username string) (string, error) {
 		}
 	}
 
-	systemPrompt := "You are a helpful assistant for World of Warcraft players.\n"
+	systemPrompt := "You are a tactical assistant for World of Warcraft 2v2 PvP matches.\n"
 	if userSummary != "" {
 		systemPrompt += "User memory:\n" + userSummary
 	}
 
 	// PvP logic (you can keep this logic if relevant)
 	if strings.Count(prompt, ",") >= 1 {
-		systemPrompt += `You are a tactical assistant for World of Warcraft 2v2 PvP matches...` // same as before
-	} else {
-		systemPrompt += "Answer the user normally as a helpful PvP assistant."
+
+		systemPrompt += `The user team composition is already known and stored in memory. Make sure to consider our team's composition
+		in your decisions.
+
+		The user will provide two inputs and possibly the third:
+		1. Opponent 1 spec and class
+		2. Opponent 2 spec and class
+		3. Arena map name
+
+		Your job is to return a concise PvP strategy (can be read in under 15 seconds) that helps the user team win.
+
+		Always respond in the following format, but don't include the Map section if no map was provided:
+
+		---
+		Strategy Summary
+
+		[Opponent 1]
+		- Role: [What role they play]
+		- Kill Target?: [Yes/No and explain why]
+		- Swap Logic: [When to consider switching to them]
+		- Danger Abilities: [Important CDs or crowd control]
+		- Team Synergy: [How they support their partner]
+
+		[Opponent 2]
+		- Role: ...
+		- (Same format as above)
+
+		Map : [Arena map name]
+		- [One or two tips specific to this arena]`
 	}
 
 	resp, err := openaiClient.CreateChatCompletion(
@@ -361,6 +387,28 @@ func fetchCharacterProfile(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+func fetchCharacterTalents(realm, character, token string) (map[string]interface{}, error) {
+	url := fmt.Sprintf(
+		"https://us.api.blizzard.com/profile/wow/character/%s/%s/specializations?namespace=profile-us&locale=en_US",
+		realm, character,
+	)
+
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var talentData map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&talentData); err != nil {
+		return nil, err
+	}
+	return talentData, nil
+}
+
 func saveCharacter(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		// Parse JSON from request body
@@ -368,11 +416,20 @@ func saveCharacter(w http.ResponseWriter, r *http.Request) {
 			Name  string `json:"name"`
 			Race  string `json:"race"`
 			Class string `json:"class"`
+			Realm string `json:"realm"`
+			Token string `json:"token"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&character)
 		if err != nil {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
+		}
+
+		// Fetch talents from Blizzard API using realm, name, and token
+		talents, err := fetchCharacterTalents(character.Realm, character.Name, character.Token)
+		if err != nil {
+			log.Println("Talent fetch failed:", err)
+			talents = map[string]interface{}{"error": "Could not fetch talents"}
 		}
 
 		// Load current memory.json
@@ -396,22 +453,24 @@ func saveCharacter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Save character info under that username
+		// Save character info with talents
 		memory[username] = map[string]interface{}{
-			"character": map[string]string{
-				"name":  character.Name,
-				"race":  character.Race,
-				"class": character.Class,
+			"character": map[string]interface{}{
+				"name":    character.Name,
+				"race":    character.Race,
+				"class":   character.Class,
+				"realm":   character.Realm,
+				"talents": talents,
 			},
 		}
 
-		// Write it back
+		// Write back to file
 		updated, _ := json.MarshalIndent(memory, "", "  ")
 		os.WriteFile("memory.json", updated, 0644)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Character saved"})
+		json.NewEncoder(w).Encode(map[string]string{"message": "Character saved with talents"})
 	} else {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

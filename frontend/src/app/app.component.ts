@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SocketService } from './socket.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { environment } from 'src/environments/environment';
 
 interface Message {
   sender: string;
@@ -155,7 +154,7 @@ escapeHtml(text: string): string {
 }
 
 connectWithBlizzard() {
-  const clientId = process.env.client_id; // replace with your real Blizzard client ID
+  const clientId = environment.client_id; // replace with your real Blizzard client ID
   const redirectUri = 'http://localhost:4200'; // should match what's in your Blizzard app setup
   const region = 'us'; // or 'eu', 'kr', 'tw'
   const state = '1234';  // Or any unique string
@@ -183,9 +182,9 @@ fetchCharacterProfile() {
       console.log("Profile data:", data);
       this.profileInfo = data;
 
-      // 🟡 Find Bodicea
+      //  Find Bodicea
       const allCharacters = data.wow_accounts?.[0]?.characters || [];
-      const main = allCharacters.find((c: any) => c.name === "Bodicea");
+      const main = allCharacters.find((c: any) => c.name.toLowerCase() === "bodicea");
       if (!main) {
         console.warn("Bodicea not found!");
         return;
@@ -194,7 +193,9 @@ fetchCharacterProfile() {
       const simplified = {
         name: main.name,
         race: main.playable_race?.name?.en_US || "Unknown",
-        class: main.playable_class?.name?.en_US || "Unknown"
+        class: main.playable_class?.name?.en_US || "Unknown",
+        realm: main.realm?.slug?.toLowerCase() || "Unknown", 
+        token: token
       };
       console.log("Saving main character:", simplified);
 
