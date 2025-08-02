@@ -1,3 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
+
+body {
+  font-family: 'Uncial Antiqua', serif;
+  color: #f8e6c1;
+}
+
+h2 {
+  text-align: center;
+  color: gold;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+
 #messages {
   list-style: none;
   padding: 0 0 5rem 0; /* bottom padding of 5rem */
@@ -35,18 +50,27 @@ app-root {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #f0f2f5;
+  background-image: url('/assets/newlogin.jpeg'); /* or any image you choose */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Centered login card */
 .login-card {
-  background: #fff;
+  background: rgba(30, 20, 10, 0.95); /* parchment tone */
   padding: 2rem 2.5rem;
-  border-radius: 10px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  border-radius: 12px;
+  border: 2px solid #a67c2f;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
   max-width: 400px;
-  box-sizing: border-box;
+  width: 100%;
+}
+
+.login-card label {
+  color: #f0e6d2;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
 /* Input fields */
@@ -55,8 +79,10 @@ app-root {
   padding: 0.6rem;
   margin-top: 0.4rem;
   margin-bottom: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #a67c2f;
   border-radius: 6px;
+  background-color: #2e1a07;
+  color: #f8e6c1;
   font-size: 1rem;
 }
 
@@ -69,17 +95,18 @@ app-root {
 .btn {
   width: 100%;
   padding: 0.6rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
+  background: linear-gradient(to right, #a67c2f, #d4af37);
+  color: black;
+  font-weight: bold;
   font-size: 1rem;
   border-radius: 6px;
+  border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: box-shadow 0.3s ease;
 }
 
 .btn:hover {
-  background-color: #0056b3;
+  box-shadow: 0 0 10px gold;
 }
 
 /* Error message */

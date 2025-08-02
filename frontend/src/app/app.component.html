@@ -1,38 +1,21 @@
-<div *ngIf="!loggedIn" class="login-wrapper">
+<div *ngIf="!loggedIn" class="login-wrapper wow-theme">
   <div class="login-card">
-    <h2>WoWBot</h2>
-    <form (submit)="login(); $event.preventDefault();">  <!-- Fixed this line -->
+    <h2 class="wow-title">WoWBot</h2>
+    <form (submit)="login(); $event.preventDefault();">
       <div class="form-group">
         <label for="username">Username</label>
-        <input
-          id="username"
-          [(ngModel)]="username"
-          name="username"
-          required
-          class="input"
-          placeholder="Enter your username"
-        />
+        <input id="username" [(ngModel)]="username" name="username" required class="input" placeholder="Enter your username" />
       </div>
-
       <div class="form-group">
         <label for="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          [(ngModel)]="password"
-          name="password"
-          required
-          class="input"
-          placeholder="Enter access code"
-        />
+        <input id="password" type="password" [(ngModel)]="password" name="password" required class="input" placeholder="Enter access code" />
       </div>
-
-      <button type="submit" class="btn">Join</button>
-
-      <p *ngIf="loginError" class="error-msg">Incorrect password. Try again.</p>
+      <button type="submit" class="btn wow-btn">Login</button>
+      <p *ngIf="loginError" class="error-msg">Incorrect password.</p>
     </form>
   </div>
 </div>
+
 
 <div *ngIf="loggedIn" style="padding: 1rem;">
   <h2>Chat Room</h2>
