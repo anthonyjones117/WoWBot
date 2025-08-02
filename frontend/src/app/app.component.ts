@@ -153,6 +153,10 @@ escapeHtml(text: string): string {
              .replace(/'/g, '&#039;');
 }
 
+clearAllMessages() {
+  this.messages = [];
+}
+
 connectWithBlizzard() {
   const clientId = environment.client_id; // replace with your real Blizzard client ID
   const redirectUri = 'http://localhost:4200'; // should match what's in your Blizzard app setup

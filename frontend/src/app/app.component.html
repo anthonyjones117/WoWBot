@@ -38,6 +38,7 @@
   <h2>Chat Room</h2>
   <button (click)="connectWithBlizzard()">Connect with Blizzard</button>
   <button (click)="fetchCharacterProfile()">Fetch WoW Profile</button>
+  <button (click)="clearAllMessages()" style="margin-bottom: 1rem;">Clear Chat</button>
   <div *ngIf="profileInfo">
   <h3>WoW Profile Updated in Memory</h3>
 </div>
