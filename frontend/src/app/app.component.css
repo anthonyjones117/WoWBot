@@ -12,18 +12,66 @@ h2 {
   margin-bottom: 1rem;
 }
 
+.chat-wrapper {
+  padding: 2rem;
+  background-image: url('/assets/chatBackground.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.chat-card {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: rgba(20, 10, 5, 0.92);
+  border: 2px solid #a67c2f;
+  border-radius: 12px;
+}
+
+.chat-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
 
 #messages {
-  list-style: none;
-  padding: 0 0 5rem 0; /* bottom padding of 5rem */
-  max-height: 80vh;     /* or any max height that works with your layout */
+  background-color: rgba(255, 248, 220, 0.05);
+  padding: 1rem;
+  border: 1px solid #a67c2f;
+  border-radius: 8px;
+  max-height: 50vh;
   overflow-y: auto;
-  margin-bottom: 0;
-  scroll-behavior: smooth;
+  color: #f8e6c1;
+  margin-bottom: 1rem;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chat-form input {
+  flex-grow: 1;
+  padding: 0.6rem;
+  background-color: #2e1a07;
+  color: #f8e6c1;
+  border: 1px solid #a67c2f;
+  border-radius: 6px;
+}
+
+.profile-info h3 {
+  color: gold;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
 }
 
 #messages li {
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 hr {
@@ -120,4 +168,43 @@ body, app-root, .login-wrapper {
   height: 100vh !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+.agent-message {
+  background-color: rgba(30, 20, 10, 0.8);
+  color: #f8e6c1; /* golden parchment */
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  align-self: flex-start;
+  max-width: 80%;
+}
+
+.user-message {
+  background-color: #2e1a07;
+  color: #f8e6c1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  align-self: flex-end;
+  text-align: left;
+  max-width: 80%;
+}
+
+
+.small-btn {
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(to right, #a67c2f, #d4af37);
+  color: black;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease;
+  flex-shrink: 0;
+}
+
+.small-btn:hover {
+  box-shadow: 0 0 6px gold;
 }

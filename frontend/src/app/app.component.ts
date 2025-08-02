@@ -7,6 +7,8 @@ import { environment } from 'src/environments/environment';
 interface Message {
   sender: string;
   content: string;
+  role: 'agent' | 'user';
+  text: string;
 }
 
 @Component({
@@ -64,9 +66,15 @@ export class AppComponent implements OnInit {
   this.socketService.getEventListener().subscribe((event) => {
     if (event.type === 'message') {
       const data = event.data;
+
+      // Skip if message came from current user (already displayed locally)
+      if (data.sender === this.username) return;
+
       this.messages.push({
         sender: data.sender || 'System',
         content: data.content,
+        role: data.sender === 'Agent' ? 'agent' : 'user',
+        text: data.content
       });
     } else if (event.type === 'open') {
       console.log('WebSocket connected');
@@ -98,31 +106,28 @@ logout() {
 }
 
   send() {
-    if (this.chatBox.trim() !== '') {
-      const msg: Message = {
-        sender: this.username,
-        content: this.chatBox.trim(),
-      };
-      this.socketService.send(JSON.stringify(msg));
-      this.chatBox = '';
-    }
+  if (this.chatBox.trim() !== '') {
+    const msg: Message = {
+      sender: this.username,
+      content: this.chatBox.trim(),
+      role: 'user',
+      text: this.chatBox.trim()
+    };
+    this.socketService.send(JSON.stringify(msg));
+    this.messages.push(msg);  // Also add it to local display
+    this.chatBox = '';
   }
+}
 
 isSystemMessage(message: any): string {
-  const isAgent = message.sender === 'Agent';
+  if (message.role !== 'agent') return ''; // Only format agent messages
 
-  if (!isAgent) {
-    // Regular user message
-    return `<strong>${message.sender}:</strong> ${this.escapeHtml(message.content)}`;
-  }
-
-  // Agent message formatting with bold labels
   const formatted = message.content
     .split('\n')
-    .filter((line: string) => line.trim() !== '') // skip empty lines
+    .filter((line: string) => line.trim() !== '')
     .map((line: string) => {
       const [label, ...rest] = line.split(':');
-      const value = rest.join(':'); // in case the value also contains colons
+      const value = rest.join(':');
       if (value) {
         return `<div><strong>${this.escapeHtml(label.trim())}:</strong> ${this.escapeHtml(value.trim())}</div>`;
       }
@@ -131,13 +136,7 @@ isSystemMessage(message: any): string {
     .join('');
 
   return `
-    <div style="
-      background: #f1f1f1;
-      border-radius: 8px;
-      padding: 0.8em;
-      margin: 0.5em 0;
-      border: 1px solid #ccc;
-    ">
+    <div>
       <strong>Agent:</strong><br />
       ${formatted}
     </div>

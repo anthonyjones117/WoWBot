@@ -17,29 +17,44 @@
 </div>
 
 
-<div *ngIf="loggedIn" style="padding: 1rem;">
-  <h2>Chat Room</h2>
-  <button (click)="connectWithBlizzard()">Connect with Blizzard</button>
-  <button (click)="fetchCharacterProfile()">Fetch WoW Profile</button>
-  <button (click)="clearAllMessages()" style="margin-bottom: 1rem;">Clear Chat</button>
-  <div *ngIf="profileInfo">
-  <h3>WoW Profile Updated in Memory</h3>
-</div>
+<div *ngIf="loggedIn" class="chat-wrapper">
+  <div class="chat-card">
+    <h2 class="wow-title">Chat Room</h2>
+    <div class="chat-controls">
+      <button (click)="connectWithBlizzard()" class="small-btn">Connect with Blizzard</button>
+      <button (click)="fetchCharacterProfile()" class="small-btn">Fetch WoW Profile</button>
+      <button (click)="clearAllMessages()" class="small-btn">Clear Chat</button>
+      <button (click)="logout()" class="small-btn">Logout</button>
+    </div>
 
-  <button (click)="logout()" style="margin-bottom: 1rem;">Logout</button>
+    <div *ngIf="profileInfo" class="profile-info">
+      <h3>WoW Profile Updated in Memory</h3>
+    </div>
 
-  <ul id="messages">
-    <li *ngFor="let message of messages" [innerHTML]="isSystemMessage(message)"></li>
-  </ul>
+    <ul id="messages">
+      <li *ngFor="let message of messages"
+          [ngClass]="{'agent-message': message.role === 'agent', 'user-message': message.role === 'user'}">
+        
+        <!-- Agent messages get custom HTML -->
+        <span *ngIf="message.role === 'agent'" [innerHTML]="isSystemMessage(message)"></span>
 
-  <form (submit)="send(); $event.preventDefault();" class="chat-form"> <!-- This is the correct one to use chat-form -->
-    <input
-      [(ngModel)]="chatBox"
-      [ngModelOptions]="{ standalone: true }"
-      autocomplete="off"
-      placeholder="Type your message..."
-    />
-    <button type="submit">Send</button>
-  </form>
+        <!-- User messages get plain rendering -->
+        <span *ngIf="message.role === 'user'">
+          <span style="font-weight: bold;">{{ message.sender }}:</span> {{ message.text }}
+        </span>
+
+      </li>
+    </ul>
+
+    <form (submit)="send(); $event.preventDefault();" class="chat-form">
+      <input
+        [(ngModel)]="chatBox"
+        [ngModelOptions]="{ standalone: true }"
+        autocomplete="off"
+        placeholder="Type your message..."
+      />
+      <button type="submit" class="btn">Send</button>
+    </form>
+  </div>
 </div>
 <router-outlet></router-outlet>
